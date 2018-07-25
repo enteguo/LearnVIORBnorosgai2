@@ -57,8 +57,13 @@ public:
           cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth,KeyFrame *pLastKF=NULL);
 
     void ComputeIMUPreIntSinceLastFrame(const Frame* pLastF, IMUPreintegrator& imupreint) const;
+
+    //函数功能：提取IMU状态中的POSE转到相机坐标系下
+    //输入：相机到IMU的pose
     void UpdatePoseFromNS(const cv::Mat &Tbc);
     void SetInitialNavStateAndBias(const NavState& ns);
+
+    //更新IMU状态NavState
     void UpdateNavState(const IMUPreintegrator& imupreint, const Vector3d& gw);
     const NavState& GetNavState(void) const;
     void SetNavState(const NavState& ns);

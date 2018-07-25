@@ -78,11 +78,15 @@ public:
     // IMU Data since last KF. Append when new data is provided
     // Should be cleared in 1. initialization beginning, 2. new keyframe created.
     std::vector<IMUData> mvIMUSinceLastKF;
+
+    //上一KF到当前帧的预积分，1.噪声协方差矩阵，2.偏置雅可比，2.变化量
     IMUPreintegrator GetIMUPreIntSinceLastKF(Frame* pCurF, KeyFrame* pLastKF, const std::vector<IMUData>& vIMUSInceLastKF);
     IMUPreintegrator GetIMUPreIntSinceLastFrame(Frame* pCurF, Frame* pLastF);
 
 
 public:
+
+    //初始化内参，ORB特征提取的参数设置
     Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Map* pMap,
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, ConfigParam* pParams);
 

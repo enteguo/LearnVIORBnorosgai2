@@ -81,6 +81,7 @@ protected:
     KeyFrame* mpMapUpdateKF;
 
 public:
+    //初始化窗口大小等
     LocalMapping(Map* pMap, const float bMonocular, ConfigParam* pParams);
 
     void SetLoopCloser(LoopClosing* pLoopCloser);

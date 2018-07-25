@@ -28,6 +28,8 @@ public:
     void reset();
 
     // incrementally update 1)delta measurements, 2)jacobians, 3)covariance matrix
+    //函数功能：增量更新，更新变化量，偏置雅可比矩阵，噪声协方差传播
+    //输入：角速度omega，加速度acc，delta t：dt
     void update(const Vector3d& omega, const Vector3d& acc, const double& dt);
 
     // delta measurements, position/velocity/rotation(matrix)

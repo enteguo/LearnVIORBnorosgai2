@@ -87,6 +87,7 @@ void IMUPreintegrator::update(const Vector3d& omega, const Vector3d& acc, const 
 
     // noise covariance propagation of delta measurements
     // err_k+1 = A*err_k + B*err_gyro + C*err_acc
+    //噪声协方差矩阵传播
     Matrix3d I3x3 = Matrix3d::Identity();
     Matrix<double,9,9> A = Matrix<double,9,9>::Identity();
     A.block<3,3>(6,6) = dR.transpose();
@@ -105,6 +106,7 @@ void IMUPreintegrator::update(const Vector3d& omega, const Vector3d& acc, const 
 
     // jacobian of delta measurements w.r.t bias of gyro/acc
     // update P first, then V, then R
+    //偏置更新
     _J_P_Biasa += _J_V_Biasa*dt - 0.5*_delta_R*dt2;
     _J_P_Biasg += _J_V_Biasg*dt - 0.5*_delta_R*skew(acc)*_J_R_Biasg*dt2;
     _J_V_Biasa += -_delta_R*dt;
@@ -113,6 +115,7 @@ void IMUPreintegrator::update(const Vector3d& omega, const Vector3d& acc, const 
 
     // delta measurements, position/velocity/rotation(matrix)
     // update P first, then V, then R. because P's update need V&R's previous state
+    ////变化量
     _delta_P += _delta_V*dt + 0.5*_delta_R*acc*dt2;    // P_k+1 = P_k + V_k*dt + R_k*a_k*dt*dt/2
     _delta_V += _delta_R*acc*dt;
     _delta_R = normalizeRotationM(_delta_R*dR);  // normalize rotation, in case of numerical error accumulation

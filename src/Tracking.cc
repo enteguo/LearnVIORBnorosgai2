@@ -287,12 +287,13 @@ bool Tracking::TrackLocalMapWithIMU(bool bMapUpdated)
         return true;
 }
 
-//就是通过上一关键帧到这一帧的IMU 预积分量来预测当前帧的位姿
+//就是通过上一关键帧到这一帧的IMU 预积分量来预测当前帧的位姿，计算协方差矩阵等
 void Tracking::PredictNavStateByIMU(bool bMapUpdated)
 {
     if (!mpLocalMapper->GetVINSInited()) cerr << "mpLocalMapper->GetVINSInited() not, shouldn't in PredictNavStateByIMU" << endl;
 
     // Map updated, optimize with last KeyFrame
+    //选择是从参考KF到当前帧的预积分还是上一帧到当前帧的预积分
     if (mpLocalMapper->GetFirstVINSInited() || bMapUpdated)
     {
         if (mpLocalMapper->GetFirstVINSInited() && !bMapUpdated) cerr << "2-FirstVinsInit, but not bMapUpdated. shouldn't" << endl;
@@ -301,7 +302,7 @@ void Tracking::PredictNavStateByIMU(bool bMapUpdated)
         mIMUPreIntInTrack = GetIMUPreIntSinceLastKF(&mCurrentFrame, mpLastKeyFrame, mvIMUSinceLastKF);
 
         // Get initial NavState&pose from Last KeyFrame
-        mCurrentFrame.SetInitialNavStateAndBias(mpLastKeyFrame->GetNavState());
+        mCurrentFrame.SetInitialNavStateAndBias(mpLastKeyFrame->GetNavState());  //设置当前帧初始偏置
         mCurrentFrame.UpdateNavState(mIMUPreIntInTrack, Converter::toVector3d(mpLocalMapper->GetGravityVec()));
         mCurrentFrame.UpdatePoseFromNS(ConfigParam::GetMatTbc());
 
@@ -339,6 +340,7 @@ bool Tracking::TrackWithIMU(bool bMapUpdated)//替换了原来的 TrackWithMotio
 
     // Predict NavState&Pose by IMU
     // And compute the IMU pre-integration for PoseOptimization
+    //用IMU预积分计算camera POSE ，噪声协方差，偏置雅可比，变化量
     PredictNavStateByIMU(bMapUpdated);
 
     fill(mCurrentFrame.mvpMapPoints.begin(), mCurrentFrame.mvpMapPoints.end(), static_cast<MapPoint*>(NULL));
@@ -349,6 +351,8 @@ bool Tracking::TrackWithIMU(bool bMapUpdated)//替换了原来的 TrackWithMotio
         th = 15;
     else
         th = 7;
+
+    //通过投影搜索
     int nmatches = matcher.SearchByProjection(mCurrentFrame, mLastFrame, th, mSensor == System::MONOCULAR);
 
     // If few matches, uses a wider window search
@@ -417,6 +421,8 @@ bool Tracking::TrackWithIMU(bool bMapUpdated)//替换了原来的 TrackWithMotio
         }
     }
 
+
+    //匹配点数小于10点就是跟踪失败
     if (mbOnlyTracking)
     {
         mbVO = nmatchesMap < 10;
@@ -856,6 +862,7 @@ void Tracking::Track()
                 if (mpLocalMapper->GetVINSInited())
                 {
                     // 20 Frames after reloc, track with only vision
+                    //重定位20帧之后，只用视觉
                     if (mbRelocBiasPrepare)//mbRelocBiasPrepare代表正在准备用于估计偏差的连续20帧
                     {
                         bOK = TrackReferenceKeyFrame();
